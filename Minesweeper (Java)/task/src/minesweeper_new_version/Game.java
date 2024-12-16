@@ -46,19 +46,38 @@ public class Game {
             userInterface.printSetMineOrMarkCellEmptyPrompt();
             String userInput = userInterface.getUserInput();
             String[] inputParts = userInput.trim().split("\\s+");
+
+            // Validate user input
             if (inputParts.length != 3) {
                 userInterface.printErrorWrongAmountNumbersInInput();
+                continue;
             }
 
-            int[] userCoordinates = parseUserCoordinates(inputParts);
-            UserCommand userCommand = parseUserCommand(inputParts);
+            int[] userCoordinates;
+            try {
+                userCoordinates = parseUserCoordinates(inputParts);
+            } catch (IllegalArgumentException e) {
+                userInterface.printErrorWrongIntegersInInput();
+                continue;
+            }
 
+            UserCommand userCommand;
+            try {
+                userCommand = parseUserCommand(inputParts);
+            } catch (IllegalArgumentException e) {
+                userInterface.printErrorWrongUserCommandInput();
+                continue;
+            }
+
+            // Process user command
             if (userCommand == UserCommand.FREE) {
+                // Handle first move and ensure no mines are in the starting position
                 if (countUserMoves == 0) {
                     try {
                         gameBoard.fillGameBoard(userCoordinates, amountMines);
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
+                        continue;
                     }
                     ++countUserMoves;
                 }
@@ -82,6 +101,7 @@ public class Game {
                 }
             }
 
+            // Print the updated game board after each move
             gameBoard.printGameBoard();
         } while (!gameBoard.areAllCellsRevealed());
         userInterface.printCongratulationMessage();
